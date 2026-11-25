@@ -14,7 +14,11 @@ pool = ConnectionPool(
     DATABASE_URL,
     min_size=1,
     max_size=int(os.getenv("DB_POOL_SIZE", "20")),
-    kwargs={"row_factory": dict_row},
+    # prepare_threshold=None: no server-side prepared statements, so it also works
+    # through connection poolers like Neon's PgBouncer endpoint.
+    kwargs={"row_factory": dict_row, "prepare_threshold": None},
+    # serverless databases (Neon) close idle connections: test each one before use
+    check=ConnectionPool.check_connection,
     open=False,
 )
 
